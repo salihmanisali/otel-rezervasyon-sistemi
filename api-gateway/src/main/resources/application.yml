@@ -1,0 +1,79 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: hotel-service
+          uri: http://hotel-service:8080
+          predicates:
+            - Path=/api/hotels/**, /api/rooms/**
+        - id: reservation-service
+          uri: http://reservation-service:8081
+          predicates:
+            - Path=/api/reservations/**
+        - id: hotel-service-swagger
+          uri: http://hotel-service:8080
+          predicates:
+            - Path=/hotel-service/swagger-ui/**, /hotel-service/swagger-ui.html, /hotel-service/api-docs/**
+          filters:
+            - RewritePath=/hotel-service(?<segment>/?.*), $\{segment}
+        - id: reservation-service-swagger
+          uri: http://reservation-service:8081
+          predicates:
+            - Path=/reservation-service/swagger-ui/**, /reservation-service/swagger-ui.html, /reservation-service/api-docs/**
+          filters:
+            - RewritePath=/reservation-service(?<segment>/?.*), $\{segment}
+        - id: notification-service-swagger
+          uri: http://notification-service:8082
+          predicates:
+            - Path=/notification-service/swagger-ui/**, /notification-service/swagger-ui.html, /notification-service/api-docs/**
+          filters:
+            - RewritePath=/notification-service(?<segment>/?.*), $\{segment}
+
+# Server configuration
+server:
+  port: 8000
+
+# Security configuration
+# Secrets must be stored in Parameter Store but this is demo app
+jwt:
+  secret: otelReservationSystemSecretKey123456789012345678901234567890
+  expiration: 86400000
+
+# Logging configuration
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    com.otel.apigateway: DEBUG
+
+# Swagger/OpenAPI configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Hotel Service
+        url: /hotel-service/api-docs
+      - name: Reservation Service
+        url: /reservation-service/api-docs
+      - name: Notification Service
+        url: /notification-service/api-docs
+    operationsSorter: method
+    tagsSorter: alpha
+    configUrl: /swagger-ui/swagger-config
+    disable-swagger-default-url: false
+  cache:
+    disabled: true
+
+# OpenAPI Info
+openapi:
+  info:
+    title: API Gateway
+    description: API Gateway for Hotel Reservation System
+    version: 1.0.0
+    contact:
+      name: API Gateway Team
+      email: gateway@example.com

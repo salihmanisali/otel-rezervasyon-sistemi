@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: api-gateway
+
+# Server configuration
+server:
+  port: 8000
+
+# Security configuration
+jwt:
+  secret: otelReservationSystemSecretKey123456789012345678901234567890
+  expiration: 86400000
+
+# Logging configuration
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    org.springframework.security: DEBUG
+    com.otel.apigateway: DEBUG
