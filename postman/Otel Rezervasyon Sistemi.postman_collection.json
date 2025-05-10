@@ -1,0 +1,1435 @@
+{
+	"info": {
+		"_postman_id": "054c65bd-b13c-4392-83f3-eea0fd97776b",
+		"name": "Otel Rezervasyon Sistemi",
+		"description": "# Postman ile Endpointleri Test Etme Rehberi\n\n## 1\\. Postman Kurulumu ve Koleksiyon Oluşturma\n\n2. [Postman'i indirin ve kurun](https://www.postman.com/downloads/)\n    \n\n4. Postman'i açtıktan sonra, yeni bir koleksiyon oluşturun: \"Otel Rezervasyon Sistemi\"\n    \n\n6. Bu koleksiyon içinde her servis için klasörler oluşturun (Auth, Hotels, Rooms, Reservations)\n    \n\n## 2\\. Ortam Değişkenleri Oluşturma\n\n2. Postman'de sağ üst köşede \"Environments\" sekmesinden yeni bir ortam oluşturun\n    \n\n4. Aşağıdaki değişkenleri ekleyin:\n    \n    - `baseUrl`: (API Gateway URL) `http://localhost:8000`\n        \n    \n    - `token`: (Boş bırakın, daha sonra otomatik doldurulacak)\n        \n    \n\n## 3\\. Kimlik Doğrulama\n\nProjenizdeki SecurityConfig sınıfına göre, bazı endpointler korunuyor ve JWT token gerektiriyor.\n\n2. Auth klasörüne \"Login\" isteği ekleyin:\n    \n    - Method: `POST`\n        \n    \n    - URL: `{{baseUrl}}/api/auth/login`\n        \n    \n    - Body (raw - JSON):\n        \n    \n\n```\n{  \"username\": \"user\",  \"password\": \"password\"}\n\n ```\n\n- Tests sekmesine aşağıdaki kodu ekleyin (token'ı otomatik kaydetmek için):\n    \n\n```\nvar jsonData = JSON.parse(responseBody);pm.environment.set(\"token\", jsonData.token);\n\n ```\n\n## 4\\. Otel Endpointlerini Test Etme\n\nProjenizde, endpointleri public olarak ayarlanmış, kimlik doğrulama gerektirmiyor. `/api/hotels/**`\n\n2. Hotels klasörüne \"Tüm Otelleri Getir\" isteği ekleyin:\n    \n    - Method: `GET`\n        \n    \n    - URL: `{{baseUrl}}/api/hotels`\n        \n    \n\n4. \"Otel Oluştur\" isteği:\n    \n    - Method: `POST`\n        \n    \n    - URL: `{{baseUrl}}/api/hotels`\n        \n    \n    - Body (raw - JSON):\n        \n    \n\n```\n{  \"name\": \"Grand Hotel\",  \"address\": \"123 Main St, City\",  \"starRating\": 5}\n\n ```\n\n2. \"Otel Detayı Getir\" isteği:\n    \n    - Method: `GET`\n        \n    \n    - URL: `{{baseUrl}}/api/hotels/1`\n        \n    \n\n## 5\\. Oda Endpointlerini Test Etme\n\n2. Rooms klasörüne \"Tüm Odaları Getir\" isteği ekleyin:\n    \n    - Method: `GET`\n        \n    \n    - URL: `{{baseUrl}}/api/rooms`\n        \n    \n\n4. \"Oda Oluştur\" isteği:\n    \n    - Method: `POST`\n        \n    \n    - URL: `{{baseUrl}}/api/rooms`\n        \n    \n    - Body (raw - JSON):\n        \n    \n\n```\n{  \"hotelId\": 1,  \"roomNumber\": \"101\",  \"capacity\": 2,  \"pricePerNight\": 150.00}\n\n ```\n\n## 6\\. Rezervasyon Endpointlerini Test Etme\n\nRezervasyon endpointleri kimlik doğrulama gerektiriyor.\n\n2. Reservations klasörüne \"Tüm Rezervasyonları Getir\" isteği ekleyin:\n    \n    - Method: `GET`\n        \n    \n    - URL: `{{baseUrl}}/api/reservations`\n        \n    \n    - Auth sekmesi: Type \"Bearer Token\" seçin ve Token alanına `{{token}}` yazın\n        \n    \n\n4. \"Rezervasyon Oluştur\" isteği:\n    \n    - Method: `POST`\n        \n    \n    - URL: `{{baseUrl}}/api/reservations`\n        \n    \n    - Auth sekmesi: Type \"Bearer Token\" seçin ve Token alanına `{{token}}` yazın\n        \n    \n    - Body (raw - JSON):\n        \n    \n\n```\n{  \"hotelId\": 1,  \"roomId\": 1,  \"guestName\": \"Ahmet Yılmaz\",  \"checkInDate\": \"2023-12-01\",  \"checkOutDate\": \"2023-12-05\"}\n\n ```\n\n2. \"Rezervasyon Detayı Getir\" isteği:\n    \n    - Method: `GET`\n        \n    \n    - URL: `{{baseUrl}}/api/reservations/1`\n        \n    \n    - Auth sekmesi: Type \"Bearer Token\" seçin ve Token alanına `{{token}}` yazın\n        \n    \n\n## 7\\. Test İşlemi Adımları\n\n2. İlk olarak \"Login\" isteğini çalıştırın ve token aldığınızdan emin olun\n    \n\n4. Otel ve oda işlemlerini gerçekleştirin (kimlik doğrulama gerekmez)\n    \n\n6. Rezervasyon işlemleri için JWT token otomatik olarak kullanılacaktır\n    \n\n## 8\\. Admin İşlemleri İçin\n\nAdmin yetkisi gerektiren endpointleri test etmek için:\n\n2. Admin kullanıcısı ile giriş yapın:\n    \n\n```\n{  \"username\": \"admin\",  \"password\": \"password\"}\n\n ```\n\n## 9\\. Otomatik Test Çalıştırma\n\nKoleksiyona sağ tıklayıp \"Run collection\" seçeneği ile tüm endpointleri otomatik olarak test edebilirsiniz.\n\n## 10\\. Hata Ayıklama İpuçları\n\n- 401 (Unauthorized) hatası alıyorsanız: Token süresi dolmuş olabilir, yeniden login isteği gönderin\n    \n\n- 403 (Forbidden) hatası alıyorsanız: Yetkileriniz yetersiz, admin kullanıcısı ile giriş yapmayı deneyin\n    \n\n- 404 (Not Found) hatası alıyorsanız: Endpoint URL'sini kontrol edin veya ilgili kaynağın (otel, oda vb.) var olduğundan emin olun\n    \n\nProjenizin SecurityConfig sınıfında belirtildiği gibi, , ve endpointleri kimlik doğrulama gerektirmezken, endpointleri JWT token ile kimlik doğrulama gerektiriyor. `/api/auth/**/api/hotels/**/api/rooms/**/api/reservations/**`",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2641917"
+	},
+	"item": [
+		{
+			"name": "hotels",
+			"item": [
+				{
+					"name": "get All Hotels",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/hotels",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hotels"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"id\": \"<long>\",\n    \"name\": \"<string>\",\n    \"address\": \"<string>\",\n    \"starRating\": \"<integer>\"\n  },\n  {\n    \"id\": \"<long>\",\n    \"name\": \"<string>\",\n    \"address\": \"<string>\",\n    \"starRating\": \"<integer>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "create Hotel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Deneme 2 Hotel\",\n    \"address\": \"22 St, City\",\n    \"starRating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/hotels",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hotels"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": \"<long>\",\n  \"name\": \"<string>\",\n  \"address\": \"<string>\",\n  \"starRating\": \"<integer>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"<long>\",\n  \"name\": \"<string>\",\n  \"address\": \"<string>\",\n  \"starRating\": \"<integer>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "get Hotel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/hotels/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"<long>\",\n  \"name\": \"<string>\",\n  \"address\": \"<string>\",\n  \"starRating\": \"<integer>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "update Hotel",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Deneme 222222 Hotel\",\n    \"address\": \"222222 St, City\",\n    \"starRating\": 5\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/hotels/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"id\": \"<long>\",\n  \"name\": \"<string>\",\n  \"address\": \"<string>\",\n  \"starRating\": \"<integer>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"id\": \"<long>\",\n  \"name\": \"<string>\",\n  \"address\": \"<string>\",\n  \"starRating\": \"<integer>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "delete Hotel",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/hotels/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"hotels",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/hotels/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"hotels",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "rooms",
+			"item": [
+				{
+					"name": "get All Rooms",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"hotelId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"roomNumber\": \"<string>\",\n    \"capacity\": \"<integer>\",\n    \"pricePerNight\": \"<number>\"\n  },\n  {\n    \"hotelId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"roomNumber\": \"<string>\",\n    \"capacity\": \"<integer>\",\n    \"pricePerNight\": \"<number>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "create Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hotelId\": 1,\n  \"roomNumber\": 101,\n  \"capacity\": 5,\n  \"pricePerNight\": 200\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "get Rooms By Hotel Id",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/hotel/:hotelId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"hotel",
+								":hotelId"
+							],
+							"variable": [
+								{
+									"key": "hotelId",
+									"value": "2",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms/hotel/:hotelId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms",
+										"hotel",
+										":hotelId"
+									],
+									"variable": [
+										{
+											"key": "hotelId",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"hotelId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"roomNumber\": \"<string>\",\n    \"capacity\": \"<integer>\",\n    \"pricePerNight\": \"<number>\"\n  },\n  {\n    \"hotelId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"roomNumber\": \"<string>\",\n    \"capacity\": \"<integer>\",\n    \"pricePerNight\": \"<number>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "get Room",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "2",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "update Room",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"hotelId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"roomNumber\": \"<string>\",\n  \"capacity\": \"<integer>\",\n  \"pricePerNight\": \"<number>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "delete Room",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rooms/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/rooms/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"rooms",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "api/reservations",
+			"item": [
+				{
+					"name": "get All Reservations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  },\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "create Reservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"checkInDate\": \"2025-11-01\",\n    \"checkOutDate\": \"2025-11-05\",\n    \"hotelId\": 1,\n    \"roomId\": 1,\n    \"guestName\": \"Salih EFE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations"
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "get Reservations By Room",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/room/:roomId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"room",
+								":roomId"
+							],
+							"variable": [
+								{
+									"key": "roomId",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations/room/:roomId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations",
+										"room",
+										":roomId"
+									],
+									"variable": [
+										{
+											"key": "roomId",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  },\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "get Reservations By Hotel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/hotel/:hotelId",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"hotel",
+								":hotelId"
+							],
+							"variable": [
+								{
+									"key": "hotelId",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations/hotel/:hotelId",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations",
+										"hotel",
+										":hotelId"
+									],
+									"variable": [
+										{
+											"key": "hotelId",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "[\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  },\n  {\n    \"checkInDate\": \"<date>\",\n    \"checkOutDate\": \"<date>\",\n    \"hotelId\": \"<long>\",\n    \"roomId\": \"<long>\",\n    \"id\": \"<long>\",\n    \"guestName\": \"<string>\",\n    \"status\": \"<string>\"\n  }\n]"
+						}
+					]
+				},
+				{
+					"name": "get Reservation",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "update Reservation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "*/*"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "*/*"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "*/*"
+								}
+							],
+							"cookie": [],
+							"body": "{\n  \"checkInDate\": \"<date>\",\n  \"checkOutDate\": \"<date>\",\n  \"hotelId\": \"<long>\",\n  \"roomId\": \"<long>\",\n  \"id\": \"<long>\",\n  \"guestName\": \"<string>\",\n  \"status\": \"<string>\"\n}"
+						}
+					]
+				},
+				{
+					"name": "delete Reservation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "<long>",
+									"description": "(Required) "
+								}
+							]
+						}
+					},
+					"response": [
+						{
+							"name": "OK",
+							"originalRequest": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/reservations/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"reservations",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "<long>",
+											"description": "(Required) "
+										}
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "text",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "text/plain"
+								}
+							],
+							"cookie": [],
+							"body": ""
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"    if (pm.response.code === 200) {",
+							"        const token = pm.response.json().token;",
+							"        pm.environment.set(\"token\", token);",
+							"        console.log('token: ' + token);",
+							"        console.log('environment.token: ' + pm.environment.get('token'));",
+							"    } else {",
+							"        console.error(\"Response başarısız oldu. Status kodu: \" + pm.response.code);",
+							"    }",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "noauth"
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"username\": \"admin\",\n    \"password\": \"password\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/auth/login",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
