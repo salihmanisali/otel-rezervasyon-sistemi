@@ -31,12 +31,42 @@ docker-compose up -d
 
 This will start all the services, including:
 
-- PostgreSQL database
+- PostgreSQL databases (separate instances for hotel and reservation services)
 - Zookeeper and Kafka
 - Hotel Service
 - Reservation Service
 - Notification Service
 - API Gateway
+
+The system uses health checks to ensure services start in the correct order:
+- Databases start first
+- Kafka and Zookeeper start next
+- Microservices start after their dependencies are healthy
+
+To check the status of all containers:
+```bash
+docker-compose ps
+```
+
+To view logs from all services:
+```bash
+docker-compose logs -f
+```
+
+To view logs from a specific service:
+```bash
+docker-compose logs -f <service-name>
+```
+
+To stop all services:
+```bash
+docker-compose down
+```
+
+To stop all services and remove volumes (this will delete all data):
+```bash
+docker-compose down -v
+```
 
 ### Accessing the Services
 
@@ -109,12 +139,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9...
 
 ## Swagger-UI links
 
-API Gateway for Hotel Reservation System:
-Hotel Service API:
-http://localhost:8080/swagger-ui/index.html
-http://localhost:8000/notification-service/swagger-ui/index.html
+All services provide Swagger UI for API documentation. You can access them directly or through the API Gateway:
 
-Reservation Service API: http://localhost:8081/swagger-ui/index.html
+### Direct Access
+- Hotel Service API: http://localhost:8080/swagger-ui.html
+- Reservation Service API: http://localhost:8081/swagger-ui.html
+- Notification Service API: http://localhost:8082/swagger-ui.html
+
+### Through API Gateway
+- API Gateway Swagger UI (aggregated): http://localhost:8000/swagger-ui.html
+- Hotel Service API: http://localhost:8000/hotel-service/swagger-ui.html
+- Reservation Service API: http://localhost:8000/reservation-service/swagger-ui.html
+- Notification Service API: http://localhost:8000/notification-service/swagger-ui.html
 
 ## Sample Requests
 
@@ -220,7 +256,24 @@ If you encounter any issues:
    docker-compose logs zookeeper
    ```
 
-4. Verify that the database is accessible:
+4. Verify that the databases are accessible:
    ```bash
-   docker-compose exec postgres psql -U postgres
+   docker-compose exec hotel-db psql -U postgres -d hotel_service
+   docker-compose exec reservation-db psql -U postgres -d reservation_service
+   ```
+
+5. Common issues and solutions:
+
+   - **Services fail to start**: Check if the dependent services (databases, Kafka) are healthy. The docker-compose file includes health checks to ensure proper startup order.
+
+   - **Database connection issues**: Verify that the environment variables in the docker-compose.yml file match the application configuration. The services are configured to use the container names as hostnames.
+
+   - **Kafka connection issues**: If services can't connect to Kafka, check if the Kafka container is healthy and if the bootstrap servers configuration is correct.
+
+   - **API Gateway routing issues**: Ensure all services are running and accessible from the API Gateway container. The gateway is configured to use service names as hostnames.
+
+6. Rebuilding services after code changes:
+   ```bash
+   docker-compose build [service-name]
+   docker-compose up -d [service-name]
    ```
